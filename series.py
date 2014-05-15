@@ -16,10 +16,10 @@ from load_series import load_series
 regex = re.compile(r"S(\d{2})E(\d{2})")
 dirname = os.path.dirname(os.path.realpath(__file__))
 
-if not os.path.isfile('series.json'):
+if not os.path.isfile(join(dirname, 'series.json')):
     load_series()
 
-if not os.path.isfile('vistas.json'):
+if not os.path.isfile(join(dirname, 'vistas.json')):
     print("Add some series first")
     sys.exit(1)
 

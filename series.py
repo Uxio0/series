@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import codecs
+from codecs import open
 import json
 from pyquery import PyQuery as pq
 import re
@@ -9,27 +9,43 @@ import requests
 import transmissionrpc
 import os.path
 from os.path import join
+import sys
+
+from load_series import load_series
 
 regex = re.compile(r"S(\d{2})E(\d{2})")
 dirname = os.path.dirname(os.path.realpath(__file__))
 
-with codecs.open(join(dirname, 'series.json')) as f:
+if not os.path.isfile('series.json'):
+    load_series()
+
+if not os.path.isfile('vistas.json'):
+    print("Add some series first")
+    sys.exit(1)
+
+with open(join(dirname, 'series.json')) as f:
     nombre_series = json.loads(f.read())
-with codecs.open(join(dirname, 'vistas.json')) as f:
+with open(join(dirname, 'vistas.json')) as f:
     vistas = json.loads(f.read())
+
 
 def add_to_transmission(torrents, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
     for torrent in torrents:
         tc.add_uri(torrent)
 
+
 def get_magnets(serie_id):
-    payload = {'SearchString1': '', 'SearchString': serie_id, 'search': 'Search'}
+    payload = {'SearchString1': '',
+               'SearchString': serie_id,
+               'search': 'Search'}
     web = requests.post('http://eztv.it/search/', data=payload)
     return [x.attr.href for x in pq(web.text)('.magnet').items()]
 
+
 def format_season(season, episode):
     return u"S%02iE%02i" % (season, episode)
+
 
 def remove_duplicates(magnets):
     duplicates = {}
@@ -47,8 +63,6 @@ def remove_duplicates(magnets):
                                         '720': is_720}
 
     return [x['magnet'] for x in duplicates.itervalues()]
-
-                    
 
 
 #First magnets in eztv are the recent ones
@@ -86,18 +100,17 @@ for id_vista, vista in vistas.iteritems():
                 vista['episode'] = detected_episode
                 vista['episode'] = detected_episode
 
-                
             if (season < detected_season or
                 (season == detected_season
                  and episode < detected_episode)):
                 print u"Adding {} {}x{}".format(nombre_series[str(id_vista)],
-                                               detected_season,
-                                               detected_episode)
+                                                detected_season,
+                                                detected_episode)
                 to_add.append(magnet)
 
-
     total_magnets += remove_duplicates(to_add)
-    
+
+
 add_to_transmission(total_magnets),
-with codecs.open(join(dirname, 'vistas.json'), 'wb', encoding='utf-8') as f:
+with open(join(dirname, 'vistas.json'), 'wb', 'utf-8') as f:
     f.write(json.dumps(vistas, indent=4))

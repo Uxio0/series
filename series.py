@@ -32,10 +32,6 @@ def format_season(season, episode):
     return u"S%02iE%02i" % (season, episode)
 
 def remove_duplicates(magnets):
-    """
-    Este método quita duplicados conservando
-    siempre el de mejor calidad.
-    """
     duplicates = {}
     for magnet in magnets:
         detected = regex.findall(magnet)

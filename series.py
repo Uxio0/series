@@ -16,6 +16,26 @@ from load_series import load_series
 regex = re.compile(r"S(\d{2})E(\d{2})")
 dirname = os.path.dirname(os.path.realpath(__file__))
 
+
+class Magnet(object):
+    def __init__(self, serie, magnet):
+        self.serie = serie
+        detectado = regex.findall(magnet)[0]
+        self.season = int(detectado[0])
+        self.episode = int(detectado[1])
+        self.magnet = magnet
+        self.hd = '720p' in magnet
+
+    def __repr__(self):
+        return u"{} S{:02d}E{:02d} -> HD={}".format(nombre_series[str(self.serie)],
+                                                    self.season, self.episode,
+                                                    self.hd)
+
+    def get_key(self):
+        return u"{}S{:02d}E{:02d}".format(self.serie,
+                                          self.season, self.episode)
+
+
 if not os.path.isfile('series.json'):
     load_series()
 
@@ -29,10 +49,10 @@ with open(join(dirname, 'vistas.json')) as f:
     vistas = json.loads(f.read())
 
 
-def add_to_transmission(torrents, host='127.0.0.1', port=9091):
+def add_to_transmission(magnets, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
-    for torrent in torrents:
-        tc.add_uri(torrent)
+    for manget in magnets:
+        tc.add_uri(magnet.magnet)
 
 
 def get_magnets(serie_id):
@@ -40,34 +60,24 @@ def get_magnets(serie_id):
                'SearchString': serie_id,
                'search': 'Search'}
     web = requests.post('http://eztv.it/search/', data=payload)
-    return [x.attr.href for x in pq(web.text)('.magnet').items()]
-
-
-def format_season(season, episode):
-    return u"S%02iE%02i" % (season, episode)
+    return [Magnet(serie_id, x.attr.href)
+            for x in pq(web.text)('.magnet').items()
+            if regex.findall(x.attr.href)]
 
 
 def remove_duplicates(magnets):
     duplicates = {}
     for magnet in magnets:
-        detected = regex.findall(magnet)
-        if detected:
-            is_720 = '720' in magnet
-            detected = ''.join(detected[0])
-            if detected in duplicates:
-                if not duplicates[detected]['720'] and is_720:
-                    duplicates[detected]['magnet'] = magnet
-                    duplicates[detected]['720'] = True
-            else:
-                duplicates[detected] = {'magnet': magnet,
-                                        '720': is_720}
+        key = magnet.get_key()
+        if key in duplicates:
+            if not duplicates[key].hd and magnet.hd:
+                duplicates[key] = magnet
+        else:
+            duplicates[key] = magnet
 
-    return [x['magnet'] for x in duplicates.itervalues()]
+    return duplicates.values()
 
 
-#First magnets in eztv are the recent ones
-#So we iterate the list until we find our
-#chapter
 total_magnets = []
 for id_vista, vista in vistas.iteritems():
     id_vista = int(id_vista)
@@ -78,38 +88,21 @@ for id_vista, vista in vistas.iteritems():
     if not magnets:
         continue
 
-    #Removing the good but not interesting right now Pirate bay movie
-    if magnets[0] == 'magnet:?xt=urn:btih:79816060EA56D56F2A2148CD45705511079F9BCA&tr=udp://tracker.openbittorrent.com:80/':
-        magnets = magnets[1:]
-
     to_add = []
     for magnet in magnets:
-        detectado = regex.findall(magnet)
-        if detectado:
-            detectado = detectado[0]
-        else:
-            continue
-        detected_season = int(detectado[0])
-        detected_episode = int(detectado[1])
-        if detectado:
-            if (vista['season'] < detected_season or
-                (vista['season'] == detected_season
-                 and vista['episode'] < detected_episode)):
+        if (season < magnet.season or
+            (season == magnet.season
+             and episode < magnet.episode)):
 
-                vista['season'] = detected_season
-                vista['episode'] = detected_episode
-                vista['episode'] = detected_episode
+            total_magnets.append(magnet)
 
-            if (season < detected_season or
-                (season == detected_season
-                 and episode < detected_episode)):
-                print u"Adding {} {}x{}".format(nombre_series[str(id_vista)],
-                                                detected_season,
-                                                detected_episode)
-                to_add.append(magnet)
+    #TODO optimize this
+    vista['season'] = max([magnet.season for magnet in magnets])
+    vista['episode'] = max([magnet.episode for magnet in magnets])
 
-    total_magnets += remove_duplicates(to_add)
-
+total_magnets = remove_duplicates(total_magnets)
+for magnet in total_magnets:
+    print(magnet)
 
 add_to_transmission(total_magnets),
 with open(join(dirname, 'vistas.json'), 'wb', 'utf-8') as f:

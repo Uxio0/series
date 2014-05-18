@@ -36,10 +36,10 @@ class Magnet(object):
                                           self.season, self.episode)
 
 
-if not os.path.isfile('series.json'):
+if not os.path.isfile(join(dirname, 'series.json')):
     load_series()
 
-if not os.path.isfile('vistas.json'):
+if not os.path.isfile(join(dirname, 'vistas.json')):
     print("Add some series first")
     sys.exit(1)
 

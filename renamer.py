@@ -14,19 +14,23 @@ films_folder = "/mnt/TOURO/peliculas/"
 
 def crea_enlaces_simbolicos(archivo):
     nombre_archivo = os.path.basename(archivo)
+    target = None
     try:
         serie, temporada, _ = re.findall("(.*?)S(\d{2})E(\d{2})",
                                          nombre_archivo.replace(".", " "))[0]
         serie, temporada = serie.strip(), temporada.strip()
         os.mkdir(join(shows_folder, "{}/Season {}/").format(serie, temporada))
-        target = join(shows_folder, "{}/Season {}/{}").format(serie, temporada,
-                                                               nombre_archivo)
     except OSError:
-        target = None
+        #Folder exists
+        pass
 
     except TypeError:
         #Regular expression fail
         target = join(films_folder, "{}").format(nombre_archivo)
+    finally:
+        if not target:
+            target = join(shows_folder, "{}/Season {}/{}").format(serie, temporada,
+                                                                   nombre_archivo)
 
     if target:
         os.symlink(os.path.abspath(archivo), target)

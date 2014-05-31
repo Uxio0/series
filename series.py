@@ -95,6 +95,11 @@ for id_vista, vista in vistas.iteritems():
              and episode < magnet.episode)):
 
             total_magnets.append(magnet)
+        if magnet.season > vista['season']:
+            vista['season'] = magnet.season 
+            
+        if magnet.episode > vista['episode']:
+            vista['episode'] = magnet.episode
 
     #TODO optimize this
     vista['season'] = max([magnet.season for magnet in magnets])

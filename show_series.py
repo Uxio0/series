@@ -30,8 +30,10 @@ for k, v in vistas.iteritems():
         aired = 'Unkown'
         next_aired = 'Unknown'
 
-    print("{} -> Season {} Episode {} Date {} Next {}".format(nombre_series[k],
-                                                              v['season'],
-                                                              v['episode'],
-                                                              aired,
-                                                              next_aired))
+    name = nombre_series[k]
+    print("{}: {} -> Season {} Episode {} Date {} Next {}".format(k,
+                                                                  name,
+                                                                  v['season'],
+                                                                  v['episode'],
+                                                                  aired,
+                                                                  next_aired))

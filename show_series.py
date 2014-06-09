@@ -22,15 +22,16 @@ def get_next_episode(show, season, episode):
 
 tv = tvdb_api.Tvdb()
 for k, v in vistas.iteritems():
+    name = nombre_series[k]
     try:
         show = tv[nombre_series[k]]
         aired = show[v['season']][v['episode']]['firstaired']
         next_aired = get_next_episode(show, v['season'], v['episode'])
     except:
+        print("{} not found".format(name))
         aired = 'Unkown'
         next_aired = 'Unknown'
 
-    name = nombre_series[k]
     print("{}: {} -> Season {} Episode {} Date {} Next {}".format(k,
                                                                   name,
                                                                   v['season'],

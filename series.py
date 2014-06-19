@@ -51,7 +51,7 @@ with open(join(dirname, 'vistas.json')) as f:
 
 def add_to_transmission(magnets, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
-    for manget in magnets:
+    for magnet in magnets:
         tc.add_uri(magnet.magnet)
 
 

@@ -51,7 +51,7 @@ with open(join(dirname, 'vistas.json')) as f:
 
 def add_to_transmission(magnets, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
-    for manget in magnets:
+    for magnet in magnets:
         tc.add_uri(magnet.magnet)
 
 
@@ -79,8 +79,9 @@ def remove_duplicates(magnets):
 
 
 total_magnets = []
-for id_vista, vista in vistas.iteritems():
-    id_vista = int(id_vista)
+for id_vista_str, vista in vistas.iteritems():
+    print(u'Buscando {}'.format(nombre_series[id_vista_str]))
+    id_vista = int(id_vista_str)
     season = vista['season']
     episode = vista['episode']
 

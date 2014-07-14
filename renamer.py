@@ -19,7 +19,7 @@ def crea_enlaces_simbolicos(archivo):
         serie, temporada, _ = re.findall("(.*?)S(\d{2})E(\d{2})",
                                          nombre_archivo.replace(".", " "))[0]
         serie, temporada = serie.strip(), temporada.strip()
-        os.mkdir(join(shows_folder, "{}/Season {}/").format(serie, temporada))
+        os.makedirs(join(shows_folder, "{}/Season {}/").format(serie, temporada))
     except OSError:
         #Folder exists
         pass

@@ -10,6 +10,7 @@ import transmissionrpc
 import os.path
 from os.path import join
 import sys
+from multiprocessing import Pool
 
 from load_series import load_series
 

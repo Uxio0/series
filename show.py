@@ -9,12 +9,13 @@ from seriesDatabase import seriesDatabase
 from piratebay import PirateBay
 
 import transmissionrpc
+from transmissionrpc.error import TransmissionError
 
 
 def add_to_transmission(magnets, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
     for magnet in magnets:
-        tc.add_uri(magnet.magnet)
+        tc.add_uri(magnet)
 
 
 def get_next_episode(show, season, episode):
@@ -64,7 +65,8 @@ def format_episode(name, episode):
 
 
 def get_magnets(episodes, engine):
-    return engine.concurrent_search(episodes)
+    # return engine.concurrent_search(episodes)
+    return engine.list_search(episodes)
 
 
 def filter_magnets(magnets, query):
@@ -88,8 +90,8 @@ for serie in series:
     else:
         next_aired = 'Unknown'
 
-    if (int(last_aired['seasonnumber']) != serie['season'] and
-            int(last_aired['episodenumber']) != serie['episode']):
+    if len(aired_episodes) > 2 or (int(last_aired['seasonnumber']) != serie['season'] and
+                                   int(last_aired['episodenumber']) != serie['episode']):
 
         magnets = get_magnets([format_episode(serie['name'], aired_episode) for
                                aired_episode in aired_episodes],
@@ -98,13 +100,16 @@ for serie in series:
                             for magnet_list in magnets]
         to_download = [filtered[0] for filtered in filtered_magnets
                        if len(filtered)]
-        add_to_transmission(to_download)
-        print('Downloading {}\n'.format(serie['name']))
+        try:
+            add_to_transmission(to_download)
+            print('Downloading {}\n'.format(serie['name']))
+            bd.update_serie(serie['name'], last_aired['seasonnumber'],
+                            last_aired['episodenumber'])
+        except TransmissionError:
+            print('Failed to download (cannot connect to Tranmission')
 
     #print(episodes)
     #print(aired_episodes)
-    bd.update_serie(serie['name'], last_aired['seasonnumber'],
-                    last_aired['episodenumber'])
     print("{} -> Season {} Episode {} Last Aired Date {} Next {}".format(serie['name'],
                                                                          last_aired['seasonnumber'],
                                                                          last_aired['episodenumber'],

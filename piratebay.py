@@ -22,6 +22,9 @@ class PirateBay():
         gevent.joinall(jobs, timeout=10)
         return [job.value for job in jobs]
 
+    def list_search(self, l):
+        return [self.search(x) for x in l]
+
     def search(self, s):
         return self.parse(self.raw_search(s))
 

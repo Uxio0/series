@@ -8,6 +8,14 @@ import datetime
 from seriesDatabase import seriesDatabase
 from piratebay import PirateBay
 
+import transmissionrpc
+
+
+def add_to_transmission(magnets, host='127.0.0.1', port=9091):
+    tc = transmissionrpc.Client(host, port=port)
+    for magnet in magnets:
+        tc.add_uri(magnet.magnet)
+
 
 def get_next_episode(show, season, episode):
     if season + 1 in show:
@@ -41,6 +49,7 @@ def get_aired_episodes(episodes):
     #Set now one day in the past or check download
     now = datetime.datetime.now() - datetime.timedelta(days=1)
     aired_episodes = [episode for episode in episodes if
+                      episode['firstaired'] and
                       datetime.datetime.strptime(episode['firstaired'],
                                                  "%Y-%m-%d")
                       <= now]
@@ -63,18 +72,14 @@ def filter_magnets(magnets, query):
             if query.lower() in magnet.lower()]
 
 
-if __name__ == "__main__":
-    bd = seriesDatabase()
-    bd.insert_serie('The Walking Dead', 1, 2)
-    bd.update_serie('The Walking Dead', 4, 2)
-    bd.insert_serie('The Walking Dead', 1, 2)
-    print(bd.get_series())
-
+bd = seriesDatabase()
 series = bd.get_series()
+print(bd.get_series())
 tv = tvdb_api.Tvdb()
 pb = PirateBay()
 for serie in series:
     episodes = get_show_from_tvdb(serie, tv)
+    print(episodes)
     aired_episodes = get_aired_episodes(episodes)
     last_aired = aired_episodes[-1]
     last_aired_index = episodes.index(last_aired)
@@ -83,18 +88,25 @@ for serie in series:
     else:
         next_aired = 'Unknown'
 
-    magnets = get_magnets([format_episode(serie['name'], aired_episode) for
-                           aired_episode in aired_episodes],
-                          pb)
-    filtered_magnets = [filter_magnets(magnet_list, '1080p')
-                        for magnet_list in magnets]
-    print([filtered[0] for filtered in filtered_magnets
-           if len(filtered)])
+    if (int(last_aired['seasonnumber']) != serie['season'] and
+            int(last_aired['episodenumber']) != serie['episode']):
+
+        magnets = get_magnets([format_episode(serie['name'], aired_episode) for
+                               aired_episode in aired_episodes],
+                              pb)
+        filtered_magnets = [filter_magnets(magnet_list, '1080p')
+                            for magnet_list in magnets]
+        to_download = [filtered[0] for filtered in filtered_magnets
+                       if len(filtered)]
+        add_to_transmission(to_download)
+        print('Downloading {}\n'.format(serie['name']))
 
     #print(episodes)
     #print(aired_episodes)
+    bd.update_serie(serie['name'], last_aired['seasonnumber'],
+                    last_aired['episodenumber'])
     print("{} -> Season {} Episode {} Last Aired Date {} Next {}".format(serie['name'],
-                                                                         serie['season'],
-                                                                         serie['episode'],
+                                                                         last_aired['seasonnumber'],
+                                                                         last_aired['episodenumber'],
                                                                          last_aired['firstaired'],
                                                                          next_aired['firstaired']))

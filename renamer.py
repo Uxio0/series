@@ -9,6 +9,7 @@ from os.path import join
 import glob
 
 shows_folder = "/mnt/TOURO/shows/"
+shows_folder = "/tmp"
 films_folder = "/mnt/TOURO/peliculas/"
 
 
@@ -32,7 +33,7 @@ def crea_enlaces_simbolicos(archivo):
         if not target and serie:
             target = join(shows_folder, "{}/Season {}/{}").format(serie, temporada,
                                                                   nombre_archivo)
-	else:
+        else:
             print('Error with {}'.format(archivo))
 
     if target:

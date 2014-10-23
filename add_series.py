@@ -2,15 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from seriesDatabase import seriesDatabase
+import tvdb_api
 
 
 bd = seriesDatabase()
-nombre = raw_input("Serie?\n")
-while nombre:
-    nombre = nombre.lower()
-    answer = raw_input(u"Add %s (y/n)\n" % nombre).lower()
+tv = tvdb_api.Tvdb()
+while True:
+    nombre = raw_input("Serie?\n")
+    if not nombre:
+        break
+    show = tv[nombre]
+    if not show:
+        print("Not found {}\n".format(nombre))
+        continue
+    answer = raw_input(u"Add %s (y/n)\n" % show.data['seriesname']).lower()
     if answer in ('s', 'y'):
         season = int(raw_input("Season: "))
         episode = int(raw_input("Episode: "))
-        bd.insert_serie(nombre, season, episode)
-        nombre = raw_input("Serie?\n")
+        bd.insert_serie(show.data['seriesname'], season, episode)

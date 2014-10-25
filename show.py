@@ -15,7 +15,10 @@ from transmissionrpc.error import TransmissionError
 def add_to_transmission(magnets, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
     for magnet in magnets:
-        tc.add_uri(magnet)
+        try:
+            tc.add_uri(magnet)
+        except TransmissionError:
+            pass
 
 
 def get_next_episode(show, season, episode):

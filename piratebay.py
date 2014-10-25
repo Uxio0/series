@@ -7,13 +7,14 @@ import gevent
 
 
 class MyMagnetParser(HTMLParser):
-    magnets = []
-
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             for name, value in attrs:
                 if name == 'href' and value.startswith('magnet'):
-                    self.magnets.append(value)
+                    try:
+                        self.magnets.append(value)
+                    except AttributeError:
+                        self.magnets = [value]
 
 
 class PirateBay():
@@ -26,6 +27,7 @@ class PirateBay():
         return [self.search(x) for x in l]
 
     def search(self, s):
+        print("Downloading {}".format(s))
         return self.parse(self.raw_search(s))
 
     def raw_search(self, s):

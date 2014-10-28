@@ -88,36 +88,45 @@ for serie in series:
     episodes = get_show_from_tvdb(serie, tv)
     print(episodes)
     aired_episodes = get_aired_episodes(episodes)
-    last_aired = 'Unknown'
-    next_aired = 'Unknown'
+
+    next_aired = {}
+    last_aired = {}
     if aired_episodes:
         last_aired = aired_episodes[-1]
         last_aired_index = episodes.index(last_aired)
-        if (len(episodes) - 1) > last_aired_index:
-            next_aired = episodes[last_aired_index + 1]
+        if (int(last_aired['seasonnumber']) != serie['season'] or
+                int(last_aired['episodenumber']) != serie['episode']):
 
-    if (int(last_aired['seasonnumber']) != serie['season'] or
-            int(last_aired['episodenumber']) != serie['episode']):
+            magnets = get_magnets([format_episode(serie['name'], aired_episode)
+                                   for aired_episode in aired_episodes],
+                                  pb)
+            filtered_magnets = [filter_magnets(magnet_list, '1080p')
+                                for magnet_list in magnets]
+            to_download = [filtered[0] for filtered in filtered_magnets
+                           if len(filtered)]
+            try:
+                add_to_transmission(to_download)
+                print('Downloading {}'.format(serie['name']))
+                bd.update_serie(serie['name'], last_aired['seasonnumber'],
+                                last_aired['episodenumber'])
+            except TransmissionError:
+                print('Failed to download (cannot connect to Tranmission')
+    else:
+        last_aired_index = 0
 
-        magnets = get_magnets([format_episode(serie['name'], aired_episode) for
-                               aired_episode in aired_episodes],
-                              pb)
-        filtered_magnets = [filter_magnets(magnet_list, '1080p')
-                            for magnet_list in magnets]
-        to_download = [filtered[0] for filtered in filtered_magnets
-                       if len(filtered)]
-        try:
-            add_to_transmission(to_download)
-            print('Downloading {}'.format(serie['name']))
-            bd.update_serie(serie['name'], last_aired['seasonnumber'],
-                            last_aired['episodenumber'])
-        except TransmissionError:
-            print('Failed to download (cannot connect to Tranmission')
+    if (len(episodes) - 1) > last_aired_index:
+        next_aired = episodes[last_aired_index + 1]
+
 
     #print(episodes)
     #print(aired_episodes)
-    print("{} -> Season {} Episode {} Last Aired Date {} Next {}".format(serie['name'],
-                                                                         last_aired['seasonnumber'],
-                                                                         last_aired['episodenumber'],
-                                                                         last_aired['firstaired'],
-                                                                         next_aired['firstaired']))
+    print("{} -> Season {} Episode {}\
+          Last Aired Date {} Next {}".format(serie['name'],
+                                             last_aired.get('seasonnumber',
+                                                            ''),
+                                             last_aired.get('episodenumber',
+                                                            ''),
+                                             last_aired.get('firstaired',
+                                                            ''),
+                                             next_aired.get('firstaired',
+                                                            '')))

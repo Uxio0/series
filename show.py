@@ -79,22 +79,22 @@ def filter_magnets(magnets, query):
 
 bd = seriesDatabase()
 series = bd.get_series()
-print(bd.get_series())
 tv = tvdb_api.Tvdb()
 pb = PirateBay()
 for serie in series:
     print('-----------------------------------------')
-    print(serie['name'])
+    print(serie)
     print('-----------------------------------------')
     episodes = get_show_from_tvdb(serie, tv)
     print(episodes)
     aired_episodes = get_aired_episodes(episodes)
-    last_aired = aired_episodes[-1]
-    last_aired_index = episodes.index(last_aired)
-    if (len(episodes) - 1) > last_aired_index:
-        next_aired = episodes[last_aired_index + 1]
-    else:
-        next_aired = 'Unknown'
+    last_aired = 'Unknown'
+    next_aired = 'Unknown'
+    if last_aired:
+        last_aired = aired_episodes[-1]
+        last_aired_index = episodes.index(last_aired)
+        if (len(episodes) - 1) > last_aired_index:
+            next_aired = episodes[last_aired_index + 1]
 
     if (int(last_aired['seasonnumber']) != serie['season'] or
             int(last_aired['episodenumber']) != serie['episode']):

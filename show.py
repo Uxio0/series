@@ -90,7 +90,7 @@ for serie in series:
     aired_episodes = get_aired_episodes(episodes)
     last_aired = 'Unknown'
     next_aired = 'Unknown'
-    if last_aired:
+    if aired_episodes:
         last_aired = aired_episodes[-1]
         last_aired_index = episodes.index(last_aired)
         if (len(episodes) - 1) > last_aired_index:

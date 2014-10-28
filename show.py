@@ -93,8 +93,8 @@ for serie in series:
     else:
         next_aired = 'Unknown'
 
-    if len(aired_episodes) > 2 or (int(last_aired['seasonnumber']) != serie['season'] and
-                                   int(last_aired['episodenumber']) != serie['episode']):
+    if (int(last_aired['seasonnumber']) != serie['season'] or
+            int(last_aired['episodenumber']) != serie['episode']):
 
         magnets = get_magnets([format_episode(serie['name'], aired_episode) for
                                aired_episode in aired_episodes],

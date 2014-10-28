@@ -18,7 +18,7 @@ def add_to_transmission(magnets, host='127.0.0.1', port=9091):
         try:
             tc.add_uri(magnet)
         except TransmissionError:
-            pass
+            print('Duplicated Torrent')
 
 
 def get_next_episode(show, season, episode):
@@ -41,7 +41,7 @@ def get_show_from_tvdb(serie, tv=None):
     season = serie['season']
     show = tv[name]
     episodes = [show[season][iepisode]
-                for iepisode in range(episode, len(show[season]))]
+                for iepisode in range(episode + 1, len(show[season]))]
     # This fix chapter number for new season
     episodes += [show[iseason][iepisode]
                  for iseason in range(season + 1, len(show))
@@ -83,6 +83,9 @@ print(bd.get_series())
 tv = tvdb_api.Tvdb()
 pb = PirateBay()
 for serie in series:
+    print('-----------------------------------------')
+    print(serie['name'])
+    print('-----------------------------------------')
     episodes = get_show_from_tvdb(serie, tv)
     print(episodes)
     aired_episodes = get_aired_episodes(episodes)
@@ -105,7 +108,7 @@ for serie in series:
                        if len(filtered)]
         try:
             add_to_transmission(to_download)
-            print('Downloading {}\n'.format(serie['name']))
+            print('Downloading {}'.format(serie['name']))
             bd.update_serie(serie['name'], last_aired['seasonnumber'],
                             last_aired['episodenumber'])
         except TransmissionError:

@@ -8,13 +8,12 @@ import gevent
 
 class MyMagnetParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
+        if not hasattr(self, 'magnets'):
+            self.magnets = []
         if tag == 'a':
             for name, value in attrs:
                 if name == 'href' and value.startswith('magnet'):
-                    try:
-                        self.magnets.append(value)
-                    except AttributeError:
-                        self.magnets = [value]
+                    self.magnets.append(value)
 
 
 class PirateBay():

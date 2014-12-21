@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-from seriesDatabase import seriesDatabase
+from libs.seriesDatabase import seriesDatabase
 import tvdb_api
 
 

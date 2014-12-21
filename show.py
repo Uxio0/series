@@ -5,9 +5,9 @@ from gevent import monkey
 monkey.patch_all()
 import tvdb_api
 import datetime
-from seriesDatabase import seriesDatabase
+from libs.seriesDatabase import seriesDatabase
 #from piratebay import PirateBay
-from kickass import KickAss
+from libs.kickass import KickAss
 
 import transmissionrpc
 from transmissionrpc.error import TransmissionError

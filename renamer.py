@@ -12,13 +12,22 @@ shows_folder = "/mnt/TOURO/shows/"
 #shows_folder = "/home/shows"
 films_folder = "/mnt/TOURO/peliculas/"
 
+patterns = (
+    r"(.*?)S(\d{2})E(\d{2})",   # American S01E03
+    r"(.*?)(\d{1,2})x(\d{2})",  # English 1x03
+)
+
 
 def crea_enlaces_simbolicos(archivo):
     nombre_archivo = os.path.basename(archivo)
     target = None
     serie = None
-    result = re.findall("(.*?)S(\d{2})E(\d{2})",
-                        nombre_archivo.replace(".", " "))
+    for pattern in patterns:
+        result = re.findall(pattern,
+                            nombre_archivo.replace(".", " "))
+        if result:
+            break
+
     if result:
         # Doesn't need episode for XMBC folder structure
         serie, temporada, _ = result[0]

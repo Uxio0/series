@@ -19,6 +19,10 @@ class MyMagnetParser(HTMLParser):
 class SearchEngine(object):
     search_url = u'https://thepiratebay.se/search/{}/0/7/0'
 
+    def __init__(self, verify=False):
+        #Verify SSL Cert
+        self.verify = verify
+
     def concurrent_search(self, l):
         jobs = [gevent.spawn(self.search, x) for x in l]
         gevent.joinall(jobs, timeout=10)
@@ -36,7 +40,7 @@ class SearchEngine(object):
         Just return html with magnets based on search string
         """
         url = self.search_url.format(s)
-        f = requests.get(url)
+        f = requests.get(url, verify=self.verify)
         return f.text
 
     def parse(self, html):

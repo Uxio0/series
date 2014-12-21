@@ -1,14 +1,14 @@
 from searchEngine import SearchEngine
 
 
-class Kickass(SearchEngine):
+class KickAss(SearchEngine):
     search_url = u'https://kickass.so/usearch/{}/'
 
 
 if __name__ == "__main__":
     #print(u'\n').join(pb.search('fifa'))
 
-    ka = Kickass()
+    ka = KickAss()
     toSearch = ('fifa', 'lego', 'batman',
                 'star wars', 'Dragon ball', 'nice', 'ok', 'fine')
 

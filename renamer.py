@@ -9,7 +9,7 @@ from os.path import join
 import glob
 
 shows_folder = "/mnt/TOURO/shows/"
-shows_folder = "/tmp"
+#shows_folder = "/home/shows"
 films_folder = "/mnt/TOURO/peliculas/"
 
 
@@ -17,27 +17,32 @@ def crea_enlaces_simbolicos(archivo):
     nombre_archivo = os.path.basename(archivo)
     target = None
     serie = None
-    try:
-        serie, temporada, _ = re.findall("(.*?)S(\d{2})E(\d{2})",
-                                         nombre_archivo.replace(".", " "))[0]
+    result = re.findall("(.*?)S(\d{2})E(\d{2})",
+                        nombre_archivo.replace(".", " "))
+    if result:
+        # Doesn't need episode for XMBC folder structure
+        serie, temporada, _ = result[0]
         serie, temporada = serie.strip(), temporada.strip()
-        os.makedirs(join(shows_folder, "{}/Season {}/").format(serie, temporada))
-    except OSError:
-        #Folder exists
-        pass
-
-    except TypeError:
-        #Regular expression fail
+        target = join(shows_folder, "{}/Season {}/{}").format(serie, temporada,
+                                                              nombre_archivo)
+        try:
+            os.makedirs(join(shows_folder, "{}/Season {}/").format(serie,
+                                                                   temporada))
+        except OSError:
+            #Folder exists
+            pass
+    elif archivo:
+        #Film
         target = join(films_folder, "{}").format(nombre_archivo)
-    finally:
-        if not target and serie:
-            target = join(shows_folder, "{}/Season {}/{}").format(serie, temporada,
-                                                                  nombre_archivo)
-        else:
-            print('Error with {}'.format(archivo))
+    else:
+        print('Error, file is empty')
 
     if target:
-        os.symlink(os.path.abspath(archivo), target)
+        try:
+            os.symlink(os.path.abspath(archivo), target)
+        except OSError:
+            #Symlink exists
+            pass
         print("{}".format(target))
 
 
@@ -45,7 +50,7 @@ if len(sys.argv) == 2:
     archivo = sys.argv[1]
     if os.path.isdir(archivo):
         os.chdir(archivo)
-        tipos = ("*.mkv", "*.mp4")
+        tipos = ("*.mkv", "*.mp4", "*.avi")
         archivos = [y for x in tipos for y in glob.glob(x)]
         for archivo in archivos:
             crea_enlaces_simbolicos(archivo)

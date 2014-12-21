@@ -6,7 +6,8 @@ monkey.patch_all()
 import tvdb_api
 import datetime
 from seriesDatabase import seriesDatabase
-from piratebay import PirateBay
+#from piratebay import PirateBay
+from kickass import KickAss
 
 import transmissionrpc
 from transmissionrpc.error import TransmissionError
@@ -80,7 +81,8 @@ def filter_magnets(magnets, query):
 bd = seriesDatabase()
 series = bd.get_series()
 tv = tvdb_api.Tvdb()
-pb = PirateBay()
+# pb = PirateBay()
+pb = KickAss()
 for serie in series:
     print('-----------------------------------------')
     print(serie)

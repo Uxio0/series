@@ -1,3 +1,4 @@
 transmissionrpc
 tvdb_api
 gevent
+requests

@@ -34,6 +34,9 @@ def get_next_episode(show, season, episode):
 
 
 def get_show_from_tvdb(serie, tv=None):
+    """Receives a chapter and returns
+       Return every episode of a show from the chapter specified
+    """
     if not tv:
         tv = tvdb_api.Tvdb()
 
@@ -51,6 +54,9 @@ def get_show_from_tvdb(serie, tv=None):
 
 
 def get_aired_episodes(episodes):
+    """
+    Returns aired episodes to the actual day
+    """
     #Set now one day in the past or check download
     now = datetime.datetime.now() - datetime.timedelta(days=1)
     aired_episodes = [episode for episode in episodes if
@@ -69,6 +75,10 @@ def format_episode(name, episode):
 
 
 def get_magnets(episodes, engine):
+    """
+    Given a list of strings retrieves a list with the
+    first magnet found in the search engine
+    """
     # return engine.concurrent_search(episodes)
     return engine.list_search(episodes)
 

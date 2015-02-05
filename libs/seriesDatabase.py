@@ -27,7 +27,7 @@ class seriesDatabase():
         if season < 1:
             season = 1
         if episode < 1:
-            episode = 1
+            episode = 0
         try:
             query = u"INSERT INTO SHOWS VALUES('{}',{},{},CURRENT_TIMESTAMP)".format(name,
                                                                                      season,
@@ -41,7 +41,7 @@ class seriesDatabase():
         if season < 1:
             season = 1
         if episode < 1:
-            episode = 1
+            episode = 0
 
         query = u"UPDATE shows SET season={},episode={},date=CURRENT_TIMESTAMP where name='{}'".format(season,
                                                                                                        episode,

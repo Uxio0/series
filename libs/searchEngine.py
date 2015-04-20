@@ -3,6 +3,7 @@
 
 from HTMLParser import HTMLParser
 import requests
+requests.packages.urllib3.disable_warnings()
 import gevent
 
 
@@ -32,7 +33,6 @@ class SearchEngine(object):
         return [self.search(x) for x in l]
 
     def search(self, s):
-        print("Downloading {}".format(s))
         return self.parse(self.raw_search(s))
 
     def raw_search(self, s):

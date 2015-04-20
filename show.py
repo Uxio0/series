@@ -158,6 +158,7 @@ for serie in series:
         continue
 
     last_aired = show.get_last_aired()
+    ok = True
     for aired_episode in aired_episodes:
         magnet_list = aired_episode.get_magnet()
         filtered_magnets = filter_magnets(magnet_list, '1080p')
@@ -168,15 +169,16 @@ for serie in series:
             add_to_transmission(magnet)
             print('Downloading {}'.format(aired_episode))
         except:
-            pass
-            #break
+            ok = False
+            break
 
-    #bd.update_serie(name, last_aired.get_season(),
-    #                last_aired.get_episode_number())
+    if ok and last_aired:
+        bd.update_serie(name, last_aired.get_season(),
+                        last_aired.get_episode_number())
 
-    date_new = next_aired.get_first_aired() if next_aired else 'Unknown'
-    print("{} -> Season {} Episode {} Last Aired Date {} Next {}".format(name,
-                                                                         last_aired.get_season(),
-                                                                         last_aired.get_episode_number(),
-                                                                         last_aired.get_first_aired(),
-                                                                         date_new))
+        date_new = next_aired.get_first_aired() if next_aired else 'Unknown'
+        print("{} -> Season {} Episode {} Last Aired Date {} Next {}".format(name,
+                                                                             last_aired.get_season(),
+                                                                             last_aired.get_episode_number(),
+                                                                             last_aired.get_first_aired(),
+                                                                             date_new))

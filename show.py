@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from gevent import monkey
-monkey.patch_all()
+#from gevent import monkey
+#monkey.patch_all()
 import tvdb_api
 import datetime
 from libs.seriesDatabase import seriesDatabase
@@ -13,74 +13,113 @@ import transmissionrpc
 from transmissionrpc.error import TransmissionError
 
 
-def add_to_transmission(magnets, host='127.0.0.1', port=9091):
+def add_to_transmission(magnet, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
-    for magnet in magnets:
-        try:
-            tc.add_uri(magnet)
-        except TransmissionError:
-            print('Duplicated Torrent')
+    try:
+        tc.add_uri(magnet)
+    except TransmissionError:
+        print('Duplicated Torrent')
 
 
-def get_next_episode(show, season, episode):
-    if season + 1 in show:
-        next_aired = show[season + 1][1]['firstaired']
-    elif episode + 1 in show[season]:
-        next_aired = show[season][episode + 1]['firstaired']
-    else:
-        next_aired = 'Unknown'
+class Show():
+    tv = tvdb_api.Tvdb()
+    def __init__(self, name):
+        self.name = name
+        self.tvShow = tv[name]
+        self.all_episodes = None
 
-    return next_aired
+    def get_all_episodes(self):
+        if not self.all_episodes:
+            show = self.tvShow
+            self.all_episodes = [Episode(self,
+                                         show[iseason][iepisode])
+                                 for iseason in range(1, len(show))
+                                 for iepisode in range(1, len(show[iseason]))]
+        return self.all_episodes
 
+    def get_chapters_from(self, season, episode):
+        """
+           Return every episode of a show from the chapter specified
+        """
 
-def get_show_from_tvdb(serie, tv=None):
-    """Receives a chapter and returns
-       Return every episode of a show from the chapter specified
-    """
-    if not tv:
-        tv = tvdb_api.Tvdb()
-
-    name = serie['name']
-    episode = serie['episode']
-    season = serie['season']
-    show = tv[name]
-    episodes = [show[season][iepisode]
-                for iepisode in range(episode + 1, len(show[season]))]
-    # This fix chapter number for new season
-    episodes += [show[iseason][iepisode]
-                 for iseason in range(season + 1, len(show))
-                 for iepisode in range(1, len(show[iseason]))]
-    return episodes
-
-
-def get_aired_episodes(episodes):
-    """
-    Returns aired episodes to the actual day
-    """
-    #Set now one day in the past or check download
-    now = datetime.datetime.now() - datetime.timedelta(days=1)
-    aired_episodes = [episode for episode in episodes if
-                      episode['firstaired'] and
-                      datetime.datetime.strptime(episode['firstaired'],
-                                                 "%Y-%m-%d")
-                      <= now]
-    return aired_episodes
+        show = self.tvShow
+        # Gets remaning episodes for current season
+        episodes = [show[season][iepisode]
+                    for iepisode in range(episode + 1, len(show[season]))]
+        print(len(show))
+        print(episodes)
+        # Get episodes for new seasons
+        episodes += [show[iseason][iepisode]
+                     for iseason in range(season + 1, len(show))
+                     for iepisode in range(1, len(show[iseason]))]
+        return [Episode(self, x) for x in episodes]
 
 
-def format_episode(name, episode):
-    season = int(episode['seasonnumber'])
-    episode = int(episode['episodenumber'])
-    return u"{} S{:02d}E{:02d}".format(name, season,
-                                       episode)
+    def filter_aired_episodes(self, episodes):
+        """
+        Returns aired episodes to the actual day
+        """
+        #Set now one day in the past or check download
+        now = datetime.datetime.now() - datetime.timedelta(days=1)
+        aired_episodes = [episode for episode in episodes if
+                          episode.get_first_aired() and
+                          datetime.datetime.strptime(episode.get_first_aired(),
+                                                     "%Y-%m-%d")
+                          <= now]
+        return aired_episodes
+
+    def get_last_aired(self):
+        aired = self.filter_aired_episodes(self.get_all_episodes())
+        if aired:
+            return aired[-1]
+
+    def get_next_aired(self):
+        all_episodes = self.get_all_episodes()
+        last_aired = self.get_last_aired()
+        if last_aired:
+            index = all_episodes.index(last_aired)
+            try:
+                return all_episodes[index + 1]
+            except:
+                return None
 
 
-def get_magnets(episodes, engine):
-    """
-    Given a list of strings retrieves a list with the
-    first magnet found in the search engine
-    """
-    # return engine.concurrent_search(episodes)
-    return engine.list_search(episodes)
+class Episode():
+    engine = KickAss()
+    def __init__(self, show, episode):
+        self.show = show
+        self.episode = episode
+
+    def get_first_aired(self):
+        return self.episode['firstaired']
+
+    def get_season(self):
+        return int(self.episode['seasonnumber'])
+
+    def get_episode_number(self):
+        return int(self.episode['episodenumber'])
+
+    def format_episode(self):
+        season = self.get_season()
+        episode_number = self.get_episode_number()
+        return u"{} S{:02d}E{:02d}".format(self.show.name, season,
+                                           episode_number)
+    def get_next_episode(self):
+        show = self.show
+        if season + 1 in show and 1 in show[season + 1]:
+            episode = self.show[season + 1][1]
+        elif episode + 1 in show[season]:
+            episode = show[season][episode + 1]
+        else:
+            episode = None
+        if episode:
+            return Episode(self.show, episode)
+
+    def get_magnet(self):
+        return self.engine.search(self.format_episode())
+
+    def __repr__(self):
+        return self.format_episode()
 
 
 def filter_magnets(magnets, query):
@@ -94,51 +133,50 @@ tv = tvdb_api.Tvdb()
 # pb = PirateBay()
 pb = KickAss()
 for serie in series:
+    name = serie[0]
+    season = serie[1]
+    episode_number = serie[2]
     print('-----------------------------------------')
     print(serie)
     print('-----------------------------------------')
-    episodes = get_show_from_tvdb(serie, tv)
-    print(episodes)
-    aired_episodes = get_aired_episodes(episodes)
-
-    next_aired = {}
-    last_aired = {}
+    show = Show(name)
+    episodes = show.get_chapters_from(season, episode_number)
+    if not episodes:
+        print('No episodes for ' + name)
+        continue
+    print('All episodes known: {}'.format(episodes))
+    aired_episodes = show.filter_aired_episodes(episodes)
+    next_aired = show.get_next_aired()
     if aired_episodes:
-        last_aired = aired_episodes[-1]
-        last_aired_index = episodes.index(last_aired)
-        if (int(last_aired['seasonnumber']) != serie['season'] or
-                int(last_aired['episodenumber']) != serie['episode']):
-
-            magnets = get_magnets([format_episode(serie['name'], aired_episode)
-                                   for aired_episode in aired_episodes],
-                                  pb)
-            filtered_magnets = [filter_magnets(magnet_list, '1080p')
-                                for magnet_list in magnets]
-            to_download = [filtered[0] for filtered in filtered_magnets
-                           if len(filtered)]
-            try:
-                add_to_transmission(to_download)
-                print('Downloading {}'.format(serie['name']))
-                bd.update_serie(serie['name'], last_aired['seasonnumber'],
-                                last_aired['episodenumber'])
-            except TransmissionError:
-                print('Failed to download (cannot connect to Tranmission')
+        print('Aired: {}'.format(aired_episodes))
     else:
-        last_aired_index = 0
+        print("No episodes for " + name)
+        if next_aired:
+            print("{} will be avaliable on {}".format(
+                next_aired,
+                next_aired.get_first_aired()))
+        continue
 
-    if (len(episodes) - 1) > last_aired_index:
-        next_aired = episodes[last_aired_index + 1]
+    last_aired = show.get_last_aired()
+    for aired_episode in aired_episodes:
+        magnet_list = aired_episode.get_magnet()
+        filtered_magnets = filter_magnets(magnet_list, '1080p')
+        if filtered_magnets:
+            magnet = filtered_magnets[0] if filtered_magnets else magnet_list[0]
+        try:
+            print('Adding to transmission via rpc {}'.format(aired_episode))
+            add_to_transmission(magnet)
+            print('Downloading {}'.format(aired_episode))
+        except:
+            pass
+            #break
 
+    #bd.update_serie(name, last_aired.get_season(),
+    #                last_aired.get_episode_number())
 
-    #print(episodes)
-    #print(aired_episodes)
-    print("{} -> Season {} Episode {}\
-          Last Aired Date {} Next {}".format(serie['name'],
-                                             last_aired.get('seasonnumber',
-                                                            ''),
-                                             last_aired.get('episodenumber',
-                                                            ''),
-                                             last_aired.get('firstaired',
-                                                            ''),
-                                             next_aired.get('firstaired',
-                                                            '')))
+    date_new = next_aired.get_first_aired() if next_aired else 'Unknown'
+    print("{} -> Season {} Episode {} Last Aired Date {} Next {}".format(name,
+                                                                         last_aired.get_season(),
+                                                                         last_aired.get_episode_number(),
+                                                                         last_aired.get_first_aired(),
+                                                                         date_new))

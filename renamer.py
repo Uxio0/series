@@ -9,7 +9,6 @@ from os.path import join
 import glob
 
 shows_folder = "/mnt/TOURO/shows/"
-#shows_folder = "/home/shows"
 films_folder = "/mnt/TOURO/peliculas/"
 
 patterns = (
@@ -60,10 +59,11 @@ if len(sys.argv) == 2:
     if os.path.isdir(archivo):
         os.chdir(archivo)
         tipos = ("*.mkv", "*.mp4", "*.avi")
-        archivos = [y for x in tipos for y in glob.glob(x)]
-        for archivo in archivos:
-            crea_enlaces_simbolicos(archivo)
+        archivos = [x for tipo in tipos for x in glob.glob(tipo)]
     else:
+        archivos = [archivo]
+
+    for archivo in archivos:
         crea_enlaces_simbolicos(archivo)
 else:
     sys.exit(1)

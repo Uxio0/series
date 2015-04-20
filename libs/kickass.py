@@ -2,7 +2,7 @@ from searchEngine import SearchEngine
 
 
 class KickAss(SearchEngine):
-    search_url = u'https://kickass.so/usearch/{}/'
+    search_url = u'https://kickass.to/usearch/{}/'
 
 
 if __name__ == "__main__":

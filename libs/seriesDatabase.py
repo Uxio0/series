@@ -29,10 +29,10 @@ class seriesDatabase():
         if episode < 1:
             episode = 0
         try:
-            query = u"INSERT INTO SHOWS VALUES('{}',{},{},CURRENT_TIMESTAMP)".format(name,
-                                                                                     season,
-                                                                                     episode)
-            self.c.execute(query)
+            self.c.execute(u"INSERT INTO SHOWS VALUES(?,?,?,CURRENT_TIMESTAMP)", (name,
+                                                                                  season,
+                                                                                  episode))
+
             self.c.commit()
         except sqlite3.IntegrityError:
             pass
@@ -43,10 +43,9 @@ class seriesDatabase():
         if episode < 1:
             episode = 0
 
-        query = u"UPDATE shows SET season={},episode={},date=CURRENT_TIMESTAMP where name='{}'".format(season,
-                                                                                                       episode,
-                                                                                                       name)
-        self.c.execute(query)
+        self.c.execute(u"UPDATE shows SET season=?,episode=?,date=CURRENT_TIMESTAMP where name=?", (season,
+                                                                                                    episode,
+                                                                                                    name))
         self.c.commit()
 
     def get_series(self, name=None):

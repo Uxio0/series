@@ -46,8 +46,6 @@ class Show():
         # Gets remaning episodes for current season
         episodes = [show[season][iepisode]
                     for iepisode in range(episode + 1, len(show[season]))]
-        print(len(show))
-        print(episodes)
         # Get episodes for new seasons
         episodes += [show[iseason][iepisode]
                      for iseason in range(season + 1, len(show))

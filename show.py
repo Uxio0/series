@@ -160,8 +160,7 @@ for serie in series:
     for aired_episode in aired_episodes:
         magnet_list = aired_episode.get_magnet()
         filtered_magnets = filter_magnets(magnet_list, '1080p')
-        if filtered_magnets:
-            magnet = filtered_magnets[0] if filtered_magnets else magnet_list[0]
+        magnet = filtered_magnets[0] if filtered_magnets else magnet_list[0]
         try:
             print('Adding to transmission via rpc {}'.format(aired_episode))
             add_to_transmission(magnet)

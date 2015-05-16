@@ -34,7 +34,7 @@ class Show():
             self.all_episodes = [Episode(self,
                                          show[iseason][iepisode])
                                  for iseason in range(1, len(show))
-                                 for iepisode in range(1, len(show[iseason]))]
+                                 for iepisode in range(1, len(show[iseason]) + 1)]
         return self.all_episodes
 
     def get_chapters_from(self, season, episode):
@@ -45,7 +45,7 @@ class Show():
         show = self.tvShow
         # Gets remaning episodes for current season
         episodes = [show[season][iepisode]
-                    for iepisode in range(episode + 1, len(show[season]))]
+                    for iepisode in range(episode + 1, len(show[season]) + 1)]
         # Get episodes for new seasons
         episodes += [show[iseason][iepisode]
                      for iseason in range(season + 1, len(show))

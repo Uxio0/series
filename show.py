@@ -5,13 +5,13 @@
 #monkey.patch_all()
 import tvdb_api
 import datetime
-from libs.seriesDatabase import seriesDatabase
+from lib.seriesDatabase import seriesDatabase
 
 import transmissionrpc
 from transmissionrpc.error import TransmissionError
 
 #from piratebay import PirateBay
-from libs.kickass import KickAss
+from lib.kickass import KickAss
 SEARCH_ENGINE = KickAss()
 
 def add_to_transmission(magnet, host='127.0.0.1', port=9091):

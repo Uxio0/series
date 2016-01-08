@@ -6,12 +6,13 @@
 import tvdb_api
 import datetime
 from libs.seriesDatabase import seriesDatabase
-#from piratebay import PirateBay
-from libs.kickass import KickAss
 
 import transmissionrpc
 from transmissionrpc.error import TransmissionError
 
+#from piratebay import PirateBay
+from libs.kickass import KickAss
+SEARCH_ENGINE = KickAss()
 
 def add_to_transmission(magnet, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
@@ -23,6 +24,7 @@ def add_to_transmission(magnet, host='127.0.0.1', port=9091):
 
 class Show():
     tv = tvdb_api.Tvdb()
+
     def __init__(self, name):
         self.name = name
         self.tvShow = tv[name]
@@ -43,6 +45,8 @@ class Show():
         """
 
         show = self.tvShow
+        if season not in show:
+            return []
         # Gets remaning episodes for current season
         episodes = [show[season][iepisode]
                     for iepisode in range(episode + 1, len(show[season]) + 1)]
@@ -83,7 +87,7 @@ class Show():
 
 
 class Episode():
-    engine = KickAss()
+    engine = SEARCH_ENGINE
     def __init__(self, show, episode):
         self.show = show
         self.episode = episode
@@ -128,8 +132,6 @@ def filter_magnets(magnets, query):
 bd = seriesDatabase()
 series = bd.get_series()
 tv = tvdb_api.Tvdb()
-# pb = PirateBay()
-pb = KickAss()
 for serie in series:
     name = serie[0]
     season = serie[1]

@@ -2,7 +2,7 @@ from searchEngine import SearchEngine
 
 
 class PirateBay(SearchEngine):
-    search_url = u'https://thepiratebay.se/search/{}/0/7/0'
+    search_url = u'https://pirateproxy.tf/search/{}/0/7/0'
 
 
 if __name__ == "__main__":

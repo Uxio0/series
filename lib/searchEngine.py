@@ -24,8 +24,8 @@ class SearchEngine(object):
         #Verify SSL Cert
         self.verify = verify
 
-    def concurrent_search(self, l):
-        jobs = [gevent.spawn(self.search, x) for x in l]
+    def concurrent_search(self, search_terms):
+        jobs = [gevent.spawn(self.search, x) for x in search_terms]
         gevent.joinall(jobs, timeout=10)
         return [job.value for job in jobs]
 

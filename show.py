@@ -10,9 +10,9 @@ from lib.seriesDatabase import seriesDatabase
 import transmissionrpc
 from transmissionrpc.error import TransmissionError
 
-#from piratebay import PirateBay
-from lib.kickass import KickAss
-SEARCH_ENGINE = KickAss()
+from lib.piratebay import PirateBay
+#from lib.kickass import KickAss
+SEARCH_ENGINE = PirateBay()
 
 def add_to_transmission(magnet, host='127.0.0.1', port=9091):
     tc = transmissionrpc.Client(host, port=port)
